@@ -10,6 +10,8 @@ A self-contained, fully isolated home lab used to generate controlled security e
 
 All activity in this repository was generated in a private, isolated virtual network against systems I own and control. No public systems, real organizations, or third-party infrastructure were involved at any point.
 
+📘 **For the complete, detailed walkthrough of this project — every command, every failure encountered, every fix, and every screenshot — see the [Project Handbook](PROJECT-HANDBOOK.md).**
+
 ---
 
 ## 📑 Table of Contents
@@ -212,6 +214,7 @@ Full evidence sets for every scenario, including additional supporting screensho
 ```
 network-threat-simulation-lab/
 ├── README.md
+├── PROJECT-HANDBOOK.md
 ├── LICENSE
 ├── asset-inventory.md
 ├── lessons-learned.md
