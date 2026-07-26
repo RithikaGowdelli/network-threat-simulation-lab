@@ -13,7 +13,6 @@ Before adding anything here:
 
 ## Files
 
-[PLACEHOLDER — list each sanitized file added here with a one-line description, e.g.:
-- `ssh-auth-log-excerpt.txt` — 25 lines from /var/log/auth.log covering the Hydra brute force window, IPs unchanged since lab-internal only
-- `nmap-scan-output.txt` — full terminal output from Scenario 1 port scan
-]
+- `ssh-auth-log-excerpt.txt` — 6 real lines pulled from Scenario 2's ingested `attack_sample3.log`, showing the failed SSH login format (`Failed password for msfadmin from 192.168.50.10`). IPs left unchanged since this lab is fully internal/isolated (192.168.50.x is not a real routable range used elsewhere in this repo).
+- `nmap-scan-output.txt` — full terminal output from Scenario 1's port scan (`nmap -sT -sV 192.168.50.20`), showing all 23 open ports and service versions identified.
+- Scenario 3's full Gobuster output and Scenario 4's full beacon connection CSV (`scenario4-beacon-connections.csv`) are kept in their respective scenario folders rather than duplicated here, since they are already short enough to review directly (Gobuster output is in `scenarios/03-http-path-enumeration/README.md`; the beacon CSV is in `scenarios/04-outbound-connection/logs/`).

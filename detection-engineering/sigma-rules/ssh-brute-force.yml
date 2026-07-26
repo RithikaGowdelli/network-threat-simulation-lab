@@ -1,0 +1,26 @@
+title: SSH Brute Force - Repeated Authentication Failures
+id: 8f3b1c2e-4a1d-4e9f-9c5a-2b7d6e9f1a3c
+status: test
+description: >
+  Detects a source IP generating more than 5 failed SSH authentication attempts
+  within a 5-minute window, indicative of automated brute-force activity rather
+  than normal human login error.
+references:
+  - internal://network-threat-simulation-lab/scenarios/02-ssh-brute-force
+author: Rithika Gowdelli
+date: 2026/07/25
+logsource:
+  product: linux
+  service: auth
+detection:
+  selection:
+    message|contains: 'Failed password'
+  timeframe: 5m
+  condition: selection | count(src_ip) by src_ip > 5
+falsepositives:
+  - Legitimate user repeatedly mistyping a password
+  - Misconfigured automated service account retrying a stale credential
+level: high
+tags:
+  - attack.credential_access
+  - attack.t1110.001

@@ -1,0 +1,27 @@
+title: Periodic Outbound Beacon - Consistent Connection Interval
+id: 5d9e2f4a-7c3b-4f1e-8a6d-1e3c5b7f9a2d
+status: experimental
+description: >
+  Detects a host repeatedly connecting to the same external destination at a
+  highly consistent time interval (low standard deviation between connection
+  attempts), a signature of automated C2 beaconing rather than normal,
+  irregular human-driven traffic.
+references:
+  - internal://network-threat-simulation-lab/scenarios/04-outbound-connection
+author: Rithika Gowdelli
+date: 2026/07/26
+logsource:
+  category: network_connection
+detection:
+  selection:
+    dst_port: 4444
+  timeframe: 24h
+  condition: selection | stdev(time_delta) by src_ip, dst_ip < 2
+falsepositives:
+  - Scheduled software update checkers
+  - License validation or heartbeat health-check agents
+level: medium
+tags:
+  - attack.command_and_control
+  - attack.t1071
+  - attack.t1571

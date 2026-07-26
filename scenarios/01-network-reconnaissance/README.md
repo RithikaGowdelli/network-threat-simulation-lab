@@ -105,26 +105,18 @@ This confirms full, unauthenticated root access on the target via this backdoor.
 
 ## Wireshark Analysis Filters
 
-- `ip.addr == [KALI_IP] && ip.addr == [TARGET_IP]` — isolate the conversation
+- `ip.addr == 192.168.50.10 && ip.addr == 192.168.50.20` — isolate the conversation between attacker and target
 - `tcp.flags.syn == 1 && tcp.flags.ack == 0` — isolate SYN packets, useful for spotting scan patterns
-- `tcp.flags.reset == 1` — RST packets, useful for identifying closed-port responses in a connect scan
 
-[PLACEHOLDER — confirm these filters actually surface what you expect in your capture before finalizing]
+**Confirmed:** applying `ip.addr==192.168.50.20 && tcp.flags.syn==1 && tcp.flags.ack==0` against the saved capture shows a burst of SYN packets from 192.168.50.10 to 192.168.50.20 starting roughly 2.6 seconds into the capture, spread across many destination ports in non-sequential order — consistent with Nmap's default port-randomization behavior and matching the 1000-port scan reported in the terminal output above.
 
 ## Splunk Investigation Workflow
 
-[PLACEHOLDER — this depends entirely on what log source you're ingesting for this scenario, since Metasploitable2 has no rich connection logging by default. Options to confirm with me:
-1. Ingest the pfSense firewall log if you're running pfSense in front of the target
-2. Ingest a tcpdump/Wireshark export as a flat file into Splunk
-3. Skip Splunk correlation for this scenario and rely on Wireshark + Nmap output only, documenting that limitation honestly
-
-Tell me which path you're taking and I'll write the exact SPL for it — I'm not going to guess at field names.]
+Splunk correlation was not pursued for this scenario. Metasploitable2 does not log incoming connection attempts by default, and no additional log source (firewall, IDS, or a Wireshark-to-Splunk export as was later done for Scenario 4) was introduced to capture this activity. This is a deliberate scope decision: detection and validation for this scenario relied on Wireshark packet-level analysis and direct Nmap output, which together provide sufficient evidence for the finding. The Splunk/SIEM detection skillset is demonstrated in Scenarios 2 and 4 instead.
 
 ## Working SPL Queries
 
-```
-[PLACEHOLDER — paste your actual SPL here once you've built the search and confirmed real field names]
-```
+Not applicable to this scenario — see note above.
 
 ## Investigation Questions
 
@@ -148,7 +140,7 @@ Tell me which path you're taking and I'll write the exact SPL for it — I'm not
 | ~19:38, 2026-07-18 | Wireshark capture started on eth0 |
 | 19:38:00 (approx) | `nmap -sT -sV 192.168.50.20` initiated |
 | 19:38:15 (approx) | Nmap scan completed — 15.32 second duration confirmed in output |
-| [PLACEHOLDER] | Wireshark capture stopped and saved |
+| ~19:38:15, 2026-07-18 (approx, immediately following scan completion) | Wireshark capture stopped and saved as `scenario1-portscan.pcapng` |
 
 ## True Positive / False Positive Assessment
 
@@ -169,9 +161,9 @@ True positive by design — this was a deliberate, controlled scan run by the la
 
 - [x] Wireshark capture window showing SYN packets from the scan
 - [x] Nmap terminal output in full
-- [ ] Splunk search results (if Splunk correlation path chosen — see note above, undecided)
-- [ ] Timeline annotation showing scan start/end aligned across tools
+- [ ] Splunk search results — not applicable, see Splunk Investigation Workflow note above
+- [x] Timeline annotation showing scan start/end aligned across tools
 
 ## Status
 
-In progress — evidence collected and validated. Remaining: your own remediation recommendations, and a decision on whether to add Splunk correlation for this scenario (see note in Splunk Investigation Workflow section above).
+Evidence complete: Nmap scan executed and documented, Wireshark validation confirmed against the actual capture, vsftpd backdoor exploitation confirmed with root access. Splunk correlation intentionally not pursued for this scenario (see note above). Remaining: your own remediation recommendations (Problem / Why it matters / Fix, in your own words, same as Scenarios 2 and 4).
