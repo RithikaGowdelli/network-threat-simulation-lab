@@ -132,4 +132,4 @@ Note: T1041 (Exfiltration Over C2 Channel) is not included, since no meaningful 
 
 ## Status
 
-Complete: beacon simulation executed, Wireshark validation done, Splunk timing-pattern detection query built and verified independently, remediation drafted. Remaining: lessons-learned section (to be written separately, in your own words).
+Complete: beacon simulation executed, Wireshark validation done, Splunk timing-pattern detection query built and verified independently, remediation drafted.

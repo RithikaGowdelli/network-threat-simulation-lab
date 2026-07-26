@@ -20,7 +20,3 @@ No fixed count-based threshold was used, since this detection is based on timing
 ## Scenario 1 / 3
 
 No Splunk-based detection rule was built for these two scenarios (see `spl-queries.md` for the reasoning), so there is no tuning history to report here. Detection and validation for both relied on Wireshark packet analysis and direct tool output (Nmap, Gobuster) rather than a Splunk-based threshold rule.
-
-## General Lessons on Tuning
-
-[PLACEHOLDER — this is the one section in this file that's a genuine reflection question, not a fact I can fill in for you: in 3 to 5 sentences, what did you personally learn about the tradeoff between catching real threats and generating false alarms (alert fatigue)? This is the part of this report that actually shows a hiring manager you understand SOC analyst judgment, not just that you can write a working query. When you're ready, answer in your own words and I'll clean up the wording only.]

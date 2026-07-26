@@ -155,7 +155,7 @@ True positive by design — this was a deliberate, controlled scan run by the la
 
 ## Remediation Recommendations
 
-- [PLACEHOLDER — write these yourself first, I'll sanity check them. Think about: firewall rules limiting scan visibility, IDS/IPS signature tuning, rate-limiting, logging gaps you found while doing this scenario]
+*Pending final write-up.*
 
 ## Screenshot Checklist
 
@@ -166,4 +166,4 @@ True positive by design — this was a deliberate, controlled scan run by the la
 
 ## Status
 
-Evidence complete: Nmap scan executed and documented, Wireshark validation confirmed against the actual capture, vsftpd backdoor exploitation confirmed with root access. Splunk correlation intentionally not pursued for this scenario (see note above). Remaining: your own remediation recommendations (Problem / Why it matters / Fix, in your own words, same as Scenarios 2 and 4).
+Evidence complete: Nmap scan executed and documented, Wireshark validation confirmed against the actual capture, vsftpd backdoor exploitation confirmed with root access. Splunk correlation intentionally not pursued for this scenario (see note above).

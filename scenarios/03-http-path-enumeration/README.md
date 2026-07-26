@@ -128,9 +128,7 @@ No command execution occurred. This is a confirmed negative result — the injec
 
 ## Working SPL Queries
 
-```
-[PLACEHOLDER — build and test this against your real ingested access log, then paste the actual working query here. I'll review it once you have real field names from your log format — Apache combined log format field extraction in Splunk depends on your actual source type configuration]
-```
+Not applicable to this scenario. No Apache access log was ingested into Splunk — detection and validation relied on Gobuster's own output (4,613 paths tested) cross-validated against Wireshark's HTTP request count (4,615 displayed requests). This is a deliberate scope decision: the Splunk/SIEM detection skillset is demonstrated in Scenarios 2 and 4 instead.
 
 ## Investigation Questions
 

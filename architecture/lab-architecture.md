@@ -20,7 +20,7 @@
  └──────────────────┘
 ```
 
-Note: replace the ASCII diagram above with an actual exported diagram (draw.io, Lucidchart, or similar) before publishing. Keep this text version as a fallback for viewers who don't load images.
+A rendered version of this diagram is also available in the main [README](../README.md#-lab-architecture).
 
 ## Network Details
 

@@ -248,8 +248,6 @@ network-threat-simulation-lab/
 │   ├── scenario-04/
 │   ├── troubleshooting/
 │   └── github-setup/
-└── docs/
-    └── commit-message-guide.md
 ```
 
 ## 🚀 Future Improvements

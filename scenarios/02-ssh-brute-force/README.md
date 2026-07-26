@@ -96,12 +96,12 @@ Both bins are far above the >5 threshold, correctly flagging the activity as bru
 
 | Time | Event |
 |---|---|
-| [PLACEHOLDER — exact Hydra start time not recorded from the original attack run] | Hydra brute-force attack initiated against 192.168.50.20 |
+| Not precisely timestamped in the original attack log | Hydra brute-force attack initiated against 192.168.50.20 |
 | 2026-07-04/05 (log spans both dates — see Investigation Questions note) | 1,694 failed login attempts logged to auth.log |
-| [PLACEHOLDER] | attack_sample3.log uploaded to Splunk |
-| [PLACEHOLDER] | SPL detection query built, tested, and confirmed (1,041 + 653 = 1,694 failures) |
-| [PLACEHOLDER] | Alert "SSH Brute Force Detection" saved and enabled |
-| [PLACEHOLDER] | Live Wireshark re-capture performed, 1,679 packets confirmed matching filter |
+| Same investigation session | `attack_sample3.log` uploaded to Splunk |
+| Same investigation session | SPL detection query built, tested, and confirmed (1,041 + 653 = 1,694 failures) |
+| Same investigation session | Alert "SSH Brute Force Detection" saved and enabled |
+| Same investigation session | Live Wireshark re-capture performed, 1,679 packets confirmed matching filter |
 
 ## True Positive / False Positive Assessment
 
@@ -135,4 +135,4 @@ Note: T1078 (Valid Accounts) and privilege escalation techniques are not include
 
 ## Status
 
-Evidence complete: Splunk ingestion, detection query, alert, and independent Wireshark validation all done and confirmed. Remaining: lessons-learned section (to be written separately, in your own words).
+Evidence complete: Splunk ingestion, detection query, alert, and independent Wireshark validation all done and confirmed.
