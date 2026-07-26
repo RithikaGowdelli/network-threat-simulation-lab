@@ -94,6 +94,6 @@ In a real environment with a weak or common password on the targeted account, th
 
 ## 12. Analyst Notes
 
-- The ingested log data spanned two calendar days (July 4 and July 5), rather than a single tight window. This was not fully resolved during this investigation — it's unclear whether this reflects multiple separate attack runs concatenated into one log file, or a single longer-running session than initially assumed. Worth clarifying if this report is discussed in detail during an interview.
+- The ingested log data spanned two calendar days (July 4 and July 5), rather than a single tight window. This was not fully resolved during this investigation — it's unclear whether this reflects multiple separate attack runs concatenated into one log file, or a single longer-running session than initially assumed.
 - Splunk's automatic field extraction did not recognize the source IP within the raw log line, requiring a manual `rex` extraction — a good example of why understanding Splunk's field extraction mechanics matters beyond just running a search.
 - The alert-save error ("enable at least one action") had occurred in a prior session as well and was resolved the same way both times (adding a trigger action before saving) — worth remembering as a recurring Splunk UI behavior, not a one-off bug.

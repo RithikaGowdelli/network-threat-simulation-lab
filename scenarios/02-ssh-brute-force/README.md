@@ -79,7 +79,7 @@ Both bins are far above the >5 threshold, correctly flagging the activity as bru
 - **Is there a single username being tried repeatedly, or many usernames?** Single username (`msfadmin`) tried repeatedly against many passwords — this is a targeted brute force, not credential stuffing across multiple accounts.
 - **Did the attack culminate in a successful login?** Not tested/confirmed in this scenario. This scenario's scope was detection and validation of failed-login volume, not achieving a successful compromise. Note this explicitly rather than implying compromise occurred.
 - **How does the 5-minute bin threshold hold up against normal user behavior?** A >5-failures-per-5-minutes threshold is well above what a legitimate user mistyping a password would generate (typically 1 to 3 attempts), so this threshold has a low false-positive risk for normal usage while still catching automated brute-force volume.
-- **Observation worth flagging:** the ingested log file contained events spanning more than one calendar day (some events timestamped July 4, some July 5). Worth clarifying in your own words during review — whether this reflects multiple attack runs concatenated into one log file, or a single long-running session — since it affects how you'd describe the attack's duration if asked in an interview.
+- **Observation worth flagging:** the ingested log file contained events spanning more than one calendar day (some events timestamped July 4, some July 5) — likely reflecting multiple attack runs concatenated into one log file, rather than a single continuous session.
 
 ## Indicators of Compromise
 
