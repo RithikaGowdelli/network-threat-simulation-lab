@@ -186,14 +186,6 @@ True positive by design — this was a deliberate, controlled enumeration run by
 - Why it matters: an unpatched, decade-plus-old application is a standing risk even without one specific confirmed exploit — new CVEs against old software don't require a fresh attack to become dangerous, they just require someone to look them up.
 - Fix: if TWiki isn't actually needed, remove it entirely. If it's required, upgrade to a current, supported version, and in the meantime restrict access via firewall rule to reduce exposure while the upgrade is scheduled.
 
-## Screenshot Checklist
-
-- [x] Enumeration tool terminal output with paths and response codes
-- [x] Wireshark capture showing HTTP request pattern and count validation
-- [x] phpinfo.php full output (PHP version, paths, server signature)
-- [x] phpMyAdmin login attempts (all 4 credential combinations)
-- [x] TWiki command injection test and literal-text result
-
 ## Status
 
 Complete — evidence collected and validated, all three findings tested (1 confirmed positive, 2 confirmed negative), remediation drafted for all three.

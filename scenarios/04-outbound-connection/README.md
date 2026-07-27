@@ -122,14 +122,6 @@ Note: T1041 (Exfiltration Over C2 Channel) is not included, since no meaningful 
 
 **Fix:** Implement monitoring for outbound traffic that connects to the same destination at consistent, repeating time intervals, using the same logic demonstrated in this investigation (calculating the average gap and variation between connection attempts). Once a low-variance, repeating pattern is identified, it should trigger an alert for investigation, or be blocked outright if the destination is unrecognized or unapproved.
 
-## Screenshot Checklist
-
-- [x] Kali listener output showing beacon messages received, and the restart pattern encountered
-- [x] Metasploitable2 terminal showing the loop running and the "Connection refused" errors after listener restarts
-- [x] Wireshark capture showing the first two successful beacons with full handshake and payload
-- [x] Wireshark capture showing the later refused connections, still on the same ~30 second schedule
-- [x] Splunk query and result showing the calculated 31.14 second average interval with 1.95 second standard deviation
-
 ## Status
 
 Complete: beacon simulation executed, Wireshark validation done, Splunk timing-pattern detection query built and verified independently, remediation drafted.

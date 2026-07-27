@@ -124,15 +124,6 @@ Note: T1078 (Valid Accounts) and privilege escalation techniques are not include
 
 **Fix:** Implement fail2ban, a tool that monitors authentication logs and automatically blocks an IP address after it exceeds a failure threshold — for example, more than 5 failed login attempts within a 5-minute window, matching the detection logic used in this investigation. This adds a second layer of defense so security doesn't depend entirely on password strength alone.
 
-## Screenshot Checklist
-
-- [x] Splunk search showing 1,698 ingested failed login events
-- [x] Raw event detail view confirming log format and field parsing
-- [x] SPL query and stats table showing the two threshold-breaching bins (1,041 + 653)
-- [x] Alert "SSH Brute Force Detection" saved and enabled without error
-- [x] Wireshark capture confirming 1,679 packets matching the SSH traffic filter
-- [ ] Hydra terminal output with final attempt count (from original attack run — not captured at the time; live re-run was for Wireshark validation only, not attempt-count evidence)
-
 ## Status
 
 Evidence complete: Splunk ingestion, detection query, alert, and independent Wireshark validation all done and confirmed.

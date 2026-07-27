@@ -161,13 +161,6 @@ True positive by design — this was a deliberate, controlled scan run by the la
 
 **Fix:** Reduce the exposed attack surface by removing or patching vulnerable and backdoored services, restricting unnecessary ports with firewall rules, and deploying monitoring such as IDS/IPS or SIEM detections to identify reconnaissance activity like port scans.
 
-## Screenshot Checklist
-
-- [x] Wireshark capture window showing SYN packets from the scan
-- [x] Nmap terminal output in full
-- [ ] Splunk search results — not applicable, see Splunk Investigation Workflow note above
-- [x] Timeline annotation showing scan start/end aligned across tools
-
 ## Status
 
 Complete: Nmap scan executed and documented, Wireshark validation confirmed against the actual capture, vsftpd backdoor exploitation confirmed with root access, remediation drafted. Splunk correlation intentionally not pursued for this scenario (see note above).
