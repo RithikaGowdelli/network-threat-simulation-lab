@@ -4,19 +4,19 @@
 
 ```
                         ┌─────────────────────────────┐
-                        │   VirtualBox Host (Windows)  │
-                        │   Splunk Enterprise runs here│
+                        │  VirtualBox Host (Windows)  │
+                        │ Splunk Enterprise runs here │
                         └─────────────────────────────┘
                                      │
                         Host-only Adapter: 192.168.56.x
                                      │
         ┌────────────────────────────┴────────────────────────────┐
-        │                                                          │
+        │                                                         │
  ┌──────────────────┐                                    ┌──────────────────┐
- │   Kali Linux       │      Internal Network: "labnet"   │  Metasploitable2  │
- │   Attacker/         │◀──────────────────────────────▶│  Vulnerable Target │
- │   Wireshark         │      No internet, fully isolated │  192.168.50.20     │
- │   192.168.50.10     │                                   └──────────────────┘
+ │   Kali Linux     │      Internal Network: "labnet"    │  Metasploitable2 │
+ │   Attacker/      │◀──────────────────────────────▶   |Vulnerable Target │
+ │   Wireshark      │      No internet, fully isolated   │  192.168.50.20   │
+ │   192.168.50.10  │                                    └──────────────────┘
  └──────────────────┘
 ```
 
