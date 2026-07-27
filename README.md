@@ -29,6 +29,7 @@ All activity in this repository was generated in a private, isolated virtual net
 - [MITRE ATT&CK Mapping](#-mitre-attck-mapping)
 - [Indicators of Compromise](#-indicators-of-compromise)
 - [Folder Structure](#-folder-structure)
+- [Lessons Learned](#-lessons-learned)
 - [Future Improvements](#-future-improvements)
 - [References](#-references)
 - [License](#-license)
@@ -252,6 +253,10 @@ network-threat-simulation-lab/
 │   ├── troubleshooting/
 │   └── github-setup/
 ```
+
+## 🧭 Lessons Learned
+
+Full reflection on what worked, what didn't, and what would change in a second pass: [`lessons-learned.md`](lessons-learned.md)
 
 ## 🚀 Future Improvements
 

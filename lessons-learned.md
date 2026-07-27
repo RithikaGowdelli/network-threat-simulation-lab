@@ -1,17 +1,17 @@
 # Lessons Learned
 
-## The Most Frustrating Technical Problem
+## What was the single most frustrating technical problem across all four scenarios, and what actually fixed it?
 
-The most frustrating issue across this project was VM networking. Every reboot caused the lab IP addresses to disappear, and on one occasion I accidentally assigned Kali the same IP as the target machine. That made `ping` appear successful even though HTTP and SSH connections failed, because Kali was actually talking to itself rather than the target. Once I checked the interface configuration with `ip addr show`, I found the duplicate IP, removed it, and reassigned the correct addresses, which restored connectivity. Since this happened more than once, I built checking the IP configuration into my standard troubleshooting process before starting any scenario.
+The most frustrating issue was VM networking. Every reboot caused the lab IP addresses to reset, and on one occasion Kali was accidentally assigned the same IP as the target. This made `ping` appear successful, since Kali was effectively talking to itself, while HTTP and SSH connections failed outright. Checking the interface configuration with `ip addr show` revealed the duplicate IP; removing it and reassigning the correct addresses restored connectivity. Since this happened more than once, checking the IP configuration became a standard first step before starting any scenario.
 
-## What I'd Do Differently
+## Looking back, what would you do differently if you started this lab again from scratch?
 
-I'd spend more time automating the lab setup. The repeated IP configuration after every reboot slowed things down, and I also learned to verify prerequisites before collecting evidence — for example, confirming Wireshark was already capturing before launching an attack, rather than after. Doing those checks up front would have prevented having to restart some scenarios and would have made the overall workflow far more efficient.
+I would spend more time automating the lab setup. Re-configuring IP addresses after every reboot slowed things down repeatedly, and I also learned the value of verifying prerequisites before collecting evidence — for example, confirming Wireshark was already capturing before launching an attack, rather than after. Doing these checks upfront would have prevented having to restart parts of some scenarios and would have made the overall workflow more efficient.
 
-## What I Learned About Attacker Behavior
+## What's one thing you understand about attacker behavior now that you didn't before this project?
 
-I have a much better appreciation for how much information attackers can gather before they ever exploit anything. A single Nmap scan identified open services, software versions, and even existing backdoors. That reinforced that reconnaissance isn't just collecting information — it's what attackers use to prioritize the easiest path into a system before attempting exploitation.
+I have a much better appreciation for how much information an attacker can gather before ever attempting exploitation. A single Nmap scan identified open services, exact software versions, and even pre-existing backdoors. That reinforced that reconnaissance isn't just information-gathering for its own sake — it's how attackers prioritize the easiest path into a system before they ever attempt to exploit anything.
 
-## How This Changed My Approach to a Real SOC Alert
+## Did anything in this project change how you'd approach a real SOC alert differently than you would have before starting?
 
-Before this project, I would probably have focused only on the alert itself. Now I would always validate it with supporting evidence before making a decision. Throughout this lab, I correlated detections with packet captures, verified findings from multiple sources, and distinguished between positive and negative findings instead of assuming every alert meant a successful compromise. That gave me a much more evidence-driven approach to incident investigation.
+Yes. Before this project, I likely would have focused on the alert itself in isolation. Now I would always validate it against supporting evidence before drawing a conclusion. Throughout this lab, I correlated detections with packet captures, verified findings across multiple independent sources, and distinguished between confirmed positive and negative findings rather than assuming every alert meant a successful compromise. That shift toward an evidence-driven approach is the biggest change in how I'd handle a real investigation.
