@@ -246,8 +246,7 @@ network-threat-simulation-lab/
 │   ├── scenario-02/
 │   ├── scenario-03/
 │   ├── scenario-04/
-│   ├── troubleshooting/
-│   └── github-setup/
+│   └── troubleshooting/
 ```
 
 ## 🧭 Lessons Learned

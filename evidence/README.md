@@ -36,6 +36,3 @@ Real network troubleshooting encountered mid-project, kept as evidence of practi
 1. **KEY** — root cause found: Kali was accidentally assigned the same IP as the target (192.168.50.20), explaining why `ping` worked but HTTP did not
 2. **KEY** — conflict fixed, Kali correctly restored to 192.168.50.10
 3. **KEY** — connectivity confirmed restored, real HTML returned from the target
-
-## /evidence/github-setup/
-1. **KEY** — successful `git push`, confirming the repository is live on GitHub
