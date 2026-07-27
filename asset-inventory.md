@@ -5,7 +5,6 @@
 | Kali Linux | VM | Kali Rolling 2026.1 | 192.168.50.10 (eth0, labnet) | Attacker platform, Wireshark capture point | Rithika | Static IP not persisted — reset needed after every reboot |
 | Metasploitable2 | VM | Ubuntu 8.04 (intentionally vulnerable) | 192.168.50.20 (eth0, labnet); 192.168.56.20 (eth1, host-only, reaches Splunk) | Target | Rithika | Known-vulnerable by design, isolated only |
 | Windows Host | Physical/Host machine | Windows | Host-only network 192.168.56.x | Runs Splunk Enterprise, VirtualBox host | Rithika | Not part of the isolated labnet segment; only reachable via the host-only adapter |
-| pfSense | Not used | N/A | N/A | N/A | N/A | Not used in this lab. Originally considered for network segmentation/firewall logging but was not implemented in any of the 4 scenarios. |
 | VirtualBox Internal Network | Virtual switch | N/A | N/A ("labnet") | Isolation boundary | Rithika | No bridged adapter, no NAT to internet |
 
 ## Software Versions
