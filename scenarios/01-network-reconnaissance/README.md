@@ -155,7 +155,11 @@ True positive by design — this was a deliberate, controlled scan run by the la
 
 ## Remediation Recommendations
 
-*Pending final write-up.*
+**Problem:** During testing, the port scan revealed 23 open ports, including the backdoored vsftpd FTP service on port 21 and the pre-existing root bindshell on port 1524, with no detection or alerting in place. The environment also contained an UnrealIRCd backdoor on port 6667, although that service wasn't exploited during this scenario.
+
+**Why it matters:** If this scan had been run by a real attacker instead of during a controlled test, they could have immediately identified exposed services, matched software versions to known vulnerabilities, and discovered pre-existing backdoors with almost no effort. This is realistic because reconnaissance and port scanning are typically the first stage of an attack, and this host exposed significantly more services and version information than a hardened production server should.
+
+**Fix:** Reduce the exposed attack surface by removing or patching vulnerable and backdoored services, restricting unnecessary ports with firewall rules, and deploying monitoring such as IDS/IPS or SIEM detections to identify reconnaissance activity like port scans.
 
 ## Screenshot Checklist
 
@@ -166,4 +170,4 @@ True positive by design — this was a deliberate, controlled scan run by the la
 
 ## Status
 
-Evidence complete: Nmap scan executed and documented, Wireshark validation confirmed against the actual capture, vsftpd backdoor exploitation confirmed with root access. Splunk correlation intentionally not pursued for this scenario (see note above).
+Complete: Nmap scan executed and documented, Wireshark validation confirmed against the actual capture, vsftpd backdoor exploitation confirmed with root access, remediation drafted. Splunk correlation intentionally not pursued for this scenario (see note above).
