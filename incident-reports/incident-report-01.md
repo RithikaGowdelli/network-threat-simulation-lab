@@ -45,7 +45,6 @@ This query flagged source IP 192.168.50.10 in two separate 5-minute windows, wit
 | Expanded raw event | `evidence/scenario-02/03-raw-event-expanded-fields.png` | Single event showing log format and field parsing |
 | Alert configuration | `evidence/scenario-02/04-KEY-alert-saved-enabled.png` | Confirmation the alert saved and enabled without error |
 | Wireshark validation | `evidence/scenario-02/05-KEY-wireshark-1679-packets-confirmed.png` | 1,679 packets matching the SSH filter, independent network-level confirmation |
-| Raw sample log excerpt | `sample-data/ssh-auth-log-excerpt.txt` | 6 real lines from the ingested auth log, sanitized |
 
 ## 6. Timeline (Consolidated)
 

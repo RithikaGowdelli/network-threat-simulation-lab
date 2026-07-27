@@ -1,6 +1,0 @@
-Jul  4 19:42:06 metasploitable sshd[5341]: Failed password for msfadmin from 192.168.50.10 port 57148 ssh2
-Jul  4 19:42:06 metasploitable sshd[5353]: Failed password for msfadmin from 192.168.50.10 port 57208 ssh2
-Jul  5 18:57:15 metasploitable sshd[4790]: Failed password for msfadmin from 192.168.50.10 port 54860 ssh2
-Jul  5 18:59:21 metasploitable sshd[4794]: Failed password for msfadmin from 192.168.50.10 port 54556 ssh2
-Jul  5 19:14:46 metasploitable sshd[4814]: Failed password for msfadmin from 192.168.50.10 port 37802 ssh2
-Jul  5 19:15:13 metasploitable sshd[4816]: Failed password for msfadmin from 192.168.50.10 port 33152 ssh2

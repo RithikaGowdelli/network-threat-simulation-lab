@@ -229,10 +229,6 @@ network-threat-simulation-lab/
 │       └── periodic-beacon.yml
 ├── incident-reports/
 │   └── incident-report-01.md
-├── sample-data/
-│   ├── README.md
-│   ├── ssh-auth-log-excerpt.txt
-│   └── nmap-scan-output.txt
 ├── scenarios/
 │   ├── 01-network-reconnaissance/
 │   │   └── README.md
