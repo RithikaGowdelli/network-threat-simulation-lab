@@ -6,11 +6,11 @@ The most frustrating issue was VM networking. Every reboot caused the lab IP add
 
 ## Looking back, what would you do differently if you started this lab again from scratch?
 
-I would spend more time automating the lab setup. Re-configuring IP addresses after every reboot slowed things down repeatedly, and I also learned the value of verifying prerequisites before collecting evidence — for example, confirming Wireshark was already capturing before launching an attack, rather than after. Doing these checks upfront would have prevented having to restart parts of some scenarios and would have made the overall workflow more efficient.
+I would spend more time automating the lab setup. Re-configuring IP addresses after every reboot slowed things down repeatedly, and I also learned the value of verifying prerequisites before collecting evidence, for example, confirming Wireshark was already capturing before launching an attack, rather than after. Doing these checks upfront would have prevented having to restart parts of some scenarios and would have made the overall workflow more efficient.
 
 ## What's one thing you understand about attacker behavior now that you didn't before this project?
 
-I have a much better appreciation for how much information an attacker can gather before ever attempting exploitation. A single Nmap scan identified open services, exact software versions, and even pre-existing backdoors. That reinforced that reconnaissance isn't just information-gathering for its own sake — it's how attackers prioritize the easiest path into a system before they ever attempt to exploit anything.
+I have a much better appreciation for how much information an attacker can gather before ever attempting exploitation. A single Nmap scan identified open services, exact software versions, and even pre-existing backdoors. That reinforced that reconnaissance isn't just information-gathering for its own sake, it's how attackers prioritize the easiest path into a system before they ever attempt to exploit anything.
 
 ## Did anything in this project change how you'd approach a real SOC alert differently than you would have before starting?
 
